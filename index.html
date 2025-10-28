@@ -13,27 +13,41 @@
     #parduotuveSekcija { margin-top: 40px; display: none; }
     .preke { margin: 20px; font-size: 24px; }
   </style>
-</head>
+  
+  </head>
 <body>
   <h1>Taškų sistema</h1>
   <div id="taskai">0</div>
 
-  <button onclick="rodytiParduotuve()">🛒 Parduotuvė</button>
+  <button onclick="rodytiArbaPasleptiParduotuve()">Parduotuvė</button>
   <div id="zinute"></div>
-
+<hr size="1">
   <button onclick="keistiTaskus(-2)">–2</button>
   <button onclick="keistiTaskus(-1)">–1</button>
   <button onclick="keistiTaskus(1)">+1</button>
   <button onclick="keistiTaskus(2)">+2</button>
 
   <div id="parduotuveSekcija">
-    <h2>🛍️ Parduotuvė</h2>
-    <div class="preke">Skrybėlė – 5 taškai <button onclick="pirkti(5)">Pirkti</button></div>
+    <h2><b> Parduotuvė</b></h2>
+    <div class="preke">Nugaros masazas – 5 taškai <button onclick="pirkti(5)">Pirkti</button></div>
     <div class="preke">Gėrimas – 3 taškai <button onclick="pirkti(3)">Pirkti</button></div>
-    <div class="preke">Trofėjus – 10 taškų <button onclick="pirkti(10)">Pirkti</button></div>
+    <div class="preke">Kelione – 50 taškų <button onclick="pirkti(50)">Pirkti</button></div>
   </div>
+<hr>
+  <div id="kainorastis"></div>
+  <h2><b>Kainorastis:</b></h2>
+<div class="preke">Pakloti lova + 1 taskas</div>
+<div class="preke">Buti mandagiam + 2 taskai</div>
+<div class="preke">Pusryciai i lova + 2 taskai</div>
+<hr>
+<div id="numinusuoti"></div>
+<h2><b>Uz ka numinusuoti:</b></h2>
+<div class="preke">Uz patycias -2 taskai</div>
+<div class="preke">Buvimu saltu -3 taskai</div>
+<hr>
 
   <script>
+    // Firebase konfigūracija
     const firebaseConfig = {
       apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
       authDomain: "tasku-130d8.firebaseapp.com",
@@ -49,11 +63,13 @@
     const db = firebase.database();
     const taskaiRef = db.ref("taskai");
 
+    // Atvaizduoti taškus realiu laiku
     taskaiRef.on("value", (snapshot) => {
       const value = snapshot.val();
       document.getElementById("taskai").textContent = value !== null ? value : 0;
     });
 
+    // ➕➖ Keisti taškus
     function keistiTaskus(kiekis) {
       taskaiRef.get().then((snapshot) => {
         let dabartiniai = snapshot.val() || 0;
@@ -67,6 +83,7 @@
       });
     }
 
+    // Rodyti žinutę
     function rodytZinute(text, color) {
       const zinute = document.getElementById("zinute");
       zinute.textContent = text;
@@ -75,16 +92,20 @@
       setTimeout(() => { zinute.style.opacity = 0; }, 1000);
     }
 
-    function rodytiParduotuve() {
-      document.getElementById("parduotuveSekcija").style.display = "block";
+    // Rodyti arba paslėpti parduotuvę
+    function rodytiArbaPasleptiParduotuve() {
+      const sekcija = document.getElementById("parduotuveSekcija");
+      sekcija.style.display = (sekcija.style.display === "none") ? "block" : "none";
     }
 
+    // Pirkti prekę
     function pirkti(kaina) {
       taskaiRef.get().then((snapshot) => {
         let dabartiniai = snapshot.val() || 0;
         if (dabartiniai >= kaina) {
           taskaiRef.set(dabartiniai - kaina);
           alert("Prekė nupirkta!");
+
         } else {
           alert("Nepakanka taškų!");
         }
