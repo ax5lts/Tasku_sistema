@@ -36,32 +36,55 @@
       measurementId: "G-W9XSC0SJVJ"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const taskaiRef = db.ref("taskai");
+    // Initialize Firebase and create global reference
+    let taskaiRef;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.database();
+      taskaiRef = db.ref("taskai");
 
-    // Rodo taškus realiu laiku
-    taskaiRef.on("value", (snapshot) => {
-      const value = snapshot.val();
-      document.getElementById("taskai").textContent = value !== null ? value : 0;
-    });
+      // Rodo taškus realiu laiku
+      taskaiRef.on("value", (snapshot) => {
+        const value = snapshot.val();
+        document.getElementById("taskai").textContent = value !== null ? value : 0;
+      }, (error) => {
+        console.error("Klaida gaunant duomenis:", error);
+        rodytZinute("Klaida: " + error.message, "red");
+      });
+    } catch (error) {
+      console.error("Firebase inicializavimo klaida:", error);
+      rodytZinute("Klaida: " + error.message, "red");
+    }
 
     // Keičia taškus su –10 limitu
     function keistiTaskus(kiekis) {
-      taskaiRef.get().then((snapshot) => {
-        let dabartiniai = snapshot.val();
-        if (dabartiniai === null) dabartiniai = 0;
-
-        let nauji = dabartiniai + kiekis;
-
-        if (nauji < -10) {
-          rodytZinute("Negalima mažiau nei –10!", "orange");
-          return;
-        }
-
-        taskaiRef.set(nauji);
-        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
-      });
+      try {
+        taskaiRef.transaction((dabartiniai) => {
+          dabartiniai = dabartiniai || 0;
+          let nauji = dabartiniai + kiekis;
+          
+          if (nauji < -10) {
+            rodytZinute("Negalima mažiau nei –10!", "orange");
+            return;
+          }
+          
+          return nauji;
+        }, (error, committed, snapshot) => {
+          if (error) {
+            console.error("Transakcijos klaida:", error);
+            rodytZinute("Klaida: " + error.message, "red");
+          } else if (committed) {
+            const nauji = snapshot.val();
+            document.getElementById("taskai").textContent = nauji;
+            rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+          }
+        });
+      } catch (error) {
+        console.error("Funkcijos klaida:", error);
+        rodytZinute("Klaida: " + error.message, "red");
+      }
     }
 
     function rodytZinute(text, color) {
