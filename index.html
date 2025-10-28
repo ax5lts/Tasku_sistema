@@ -10,7 +10,8 @@
     #taskai { font-size: 48px; margin: 20px; }
     button { font-size: 24px; margin: 10px; padding: 10px 20px; }
     #zinute { font-size: 32px; margin-top: 20px; height: 40px; transition: opacity 0.5s ease; }
-    #parduotuveSekcija { margin-top: 40px; }
+    #parduotuveSekcija { margin-top: 40px; display: none; }
+    .preke { margin: 20px; font-size: 24px; }
   </style>
 </head>
 <body>
@@ -25,7 +26,12 @@
   <button onclick="keistiTaskus(1)">+1</button>
   <button onclick="keistiTaskus(2)">+2</button>
 
-  <div id="parduotuveSekcija"></div>
+  <div id="parduotuveSekcija">
+    <h2>🛍️ Parduotuvė</h2>
+    <div class="preke">Skrybėlė – 5 taškai <button onclick="pirkti(5)">Pirkti</button></div>
+    <div class="preke">Gėrimas – 3 taškai <button onclick="pirkti(3)">Pirkti</button></div>
+    <div class="preke">Trofėjus – 10 taškų <button onclick="pirkti(10)">Pirkti</button></div>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -70,15 +76,19 @@
     }
 
     function rodytiParduotuve() {
-      fetch("parduotuves_puslapis/parduotuve/parduotuve.html")
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById("parduotuveSekcija").innerHTML = html;
-        })
-        .catch(err => {
-          document.getElementById("parduotuveSekcija").innerHTML = "<p style='color:red;'>Nepavyko įkelti parduotuvės.</p>";
-          console.error("Klaida:", err);
-        });
+      document.getElementById("parduotuveSekcija").style.display = "block";
+    }
+
+    function pirkti(kaina) {
+      taskaiRef.get().then((snapshot) => {
+        let dabartiniai = snapshot.val() || 0;
+        if (dabartiniai >= kaina) {
+          taskaiRef.set(dabartiniai - kaina);
+          alert("Prekė nupirkta!");
+        } else {
+          alert("Nepakanka taškų!");
+        }
+      });
     }
   </script>
 </body>
