@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8">
+  <title>Bendri taškai</title>
+  <!-- Naudojam Firebase 9.x compat versiją -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    #taskai { font-size: 48px; margin: 20px; }
+    button { font-size: 24px; margin: 10px; padding: 10px 20px; }
+    #zinute { font-size: 32px; margin-top: 20px; height: 40px; transition: opacity 0.5s ease; }
+  </style>
+</head>
+<body>
+  <h1>Bendri taškai</h1>
+  <div id="taskai">0</div>
+
+  <button onclick="keistiTaskus(-2)">–2</button>
+  <button onclick="keistiTaskus(-1)">–1</button>
+  <button onclick="keistiTaskus(1)">+1</button>
+  <button onclick="keistiTaskus(2)">+2</button>
+
+  <div id="zinute"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
+      authDomain: "tasku-130d8.firebaseapp.com",
+      databaseURL: "https://tasku-130d8-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "tasku-130d8",
+      storageBucket: "tasku-130d8.firebasestorage.app",
+      messagingSenderId: "861286931659",
+      appId: "1:861286931659:web:c899e1fcf782aba4514f4e",
+      measurementId: "G-W9XSC0SJVJ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const taskaiRef = db.ref("taskai");
+
+    // Rodo taškus realiu laiku
+    taskaiRef.on("value", (snapshot) => {
+      const value = snapshot.val();
+      document.getElementById("taskai").textContent = value !== null ? value : 0;
+    });
+
+    // Keičia taškus su –10 limitu
+    function keistiTaskus(kiekis) {
+      taskaiRef.get().then((snapshot) => {
+        let dabartiniai = snapshot.val();
+        if (dabartiniai === null) dabartiniai = 0;
+
+        let nauji = dabartiniai + kiekis;
+
+        if (nauji < -10) {
+          rodytZinute("Negalima mažiau nei –10!", "orange");
+          return;
+        }
+
+        taskaiRef.set(nauji);
+        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+      });
+    }
+
+    function rodytZinute(text, color) {
+      const zinute = document.getElementById("zinute");
+      zinute.textContent = text;
+      zinute.style.color = color;
+      zinute.style.opacity = 1;
+      setTimeout(() => { zinute.style.opacity = 0; }, 1000);
+    }
+  </script>
+</body>
+</html>
