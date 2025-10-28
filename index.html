@@ -17,6 +17,9 @@
   <h1>Bendri taškai</h1>
   <div id="taskai">0</div>
 
+  <button onclick="rodytiparduotuve()">Parduotuve</button>
+  <iframe id ="parduotuveframe" style="width: 100%; height: 500px; border: none; display: none;"></iframe>
+
   <button onclick="keistiTaskus(-2)">–2</button>
   <button onclick="keistiTaskus(-1)">–1</button>
   <button onclick="keistiTaskus(1)">+1</button>
@@ -24,6 +27,14 @@
 
   <div id="zinute"></div>
 
+    <script>
+      function rodytiparduotuve(){
+        const frame = document.getElementById("parduotuveframe");
+        frame.src = "parduotuve.html";
+        frame.style.display = 'block';
+      }
+
+    </script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
