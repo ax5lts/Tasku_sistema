@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="lt">
 <head>
   <meta charset="UTF-8">
-  <title>Taškų sistema</title>
+  <title>Tasku sistema</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
@@ -30,8 +29,8 @@
   <div id="parduotuveSekcija">
     <h2><b> Parduotuvė</b></h2>
     <div class="preke">Nugaros masazas – 5 taškai <button onclick="pirkti(5)">Pirkti</button></div>
-    <div class="preke">Gėrimas – 3 taškai <button onclick="pirkti(3)">Pirkti</button></div>
-    <div class="preke">Kelione – 50 taškų <button onclick="pirkti(50)">Pirkti</button></div>
+    <div class="preke">Gerimas – 3 taškai <button onclick="pirkti(3)">Pirkti</button></div>
+    <div class="preke">Kelione – 50 taškai <button onclick="pirkti(50)">Pirkti</button></div>
   </div>
 <hr>
   <div id="kainorastis"></div>
@@ -75,11 +74,11 @@
         let dabartiniai = snapshot.val() || 0;
         let nauji = dabartiniai + kiekis;
         if (nauji < -10) {
-          rodytZinute("Negalima mažiau nei –10!", "orange");
+          rodytZinute("Negalima maziau nei –10!", "orange");
           return;
         }
         taskaiRef.set(nauji);
-        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taskai", kiekis > 0 ? "green" : "red");
       });
     }
 
@@ -104,10 +103,10 @@
         let dabartiniai = snapshot.val() || 0;
         if (dabartiniai >= kaina) {
           taskaiRef.set(dabartiniai - kaina);
-          alert("Prekė nupirkta!");
+          alert("Preke nupirkta!");
 
         } else {
-          alert("Nepakanka taškų!");
+          alert("Nepakanka tašku!");
         }
       });
     }
