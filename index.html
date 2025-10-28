@@ -2,8 +2,7 @@
 <html lang="lt">
 <head>
   <meta charset="UTF-8">
-  <title>Bendri taškai</title>
-  <!-- Naudojam Firebase 9.x compat versiją -->
+  <title>Taškų sistema</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
@@ -11,30 +10,23 @@
     #taskai { font-size: 48px; margin: 20px; }
     button { font-size: 24px; margin: 10px; padding: 10px 20px; }
     #zinute { font-size: 32px; margin-top: 20px; height: 40px; transition: opacity 0.5s ease; }
+    #parduotuveSekcija { margin-top: 40px; }
   </style>
 </head>
 <body>
-  <h1>Bendri taškai</h1>
+  <h1>Taškų sistema</h1>
   <div id="taskai">0</div>
 
-  <button onclick="rodytiparduotuve()">Parduotuve</button>
-  <iframe id ="parduotuveframe" style="width: 100%; height: 500px; border: none; display: none;"></iframe>
+  <button onclick="rodytiParduotuve()">🛒 Parduotuvė</button>
+  <div id="zinute"></div>
 
   <button onclick="keistiTaskus(-2)">–2</button>
   <button onclick="keistiTaskus(-1)">–1</button>
   <button onclick="keistiTaskus(1)">+1</button>
   <button onclick="keistiTaskus(2)">+2</button>
 
-  <div id="zinute"></div>
+  <div id="parduotuveSekcija"></div>
 
-    <script>
-      function rodytiparduotuve(){
-        const frame = document.getElementById("parduotuveframe");
-        frame.src = "parduotuve.html";
-        frame.style.display = 'block';
-      }
-
-    </script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
@@ -47,55 +39,26 @@
       measurementId: "G-W9XSC0SJVJ"
     };
 
-    // Initialize Firebase and create global reference
-    let taskaiRef;
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-      }
-      const db = firebase.database();
-      taskaiRef = db.ref("taskai");
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const taskaiRef = db.ref("taskai");
 
-      // Rodo taškus realiu laiku
-      taskaiRef.on("value", (snapshot) => {
-        const value = snapshot.val();
-        document.getElementById("taskai").textContent = value !== null ? value : 0;
-      }, (error) => {
-        console.error("Klaida gaunant duomenis:", error);
-        rodytZinute("Klaida: " + error.message, "red");
-      });
-    } catch (error) {
-      console.error("Firebase inicializavimo klaida:", error);
-      rodytZinute("Klaida: " + error.message, "red");
-    }
+    taskaiRef.on("value", (snapshot) => {
+      const value = snapshot.val();
+      document.getElementById("taskai").textContent = value !== null ? value : 0;
+    });
 
-    // Keičia taškus su –10 limitu
     function keistiTaskus(kiekis) {
-      try {
-        taskaiRef.transaction((dabartiniai) => {
-          dabartiniai = dabartiniai || 0;
-          let nauji = dabartiniai + kiekis;
-          
-          if (nauji < -10) {
-            rodytZinute("Negalima mažiau nei –10!", "orange");
-            return;
-          }
-          
-          return nauji;
-        }, (error, committed, snapshot) => {
-          if (error) {
-            console.error("Transakcijos klaida:", error);
-            rodytZinute("Klaida: " + error.message, "red");
-          } else if (committed) {
-            const nauji = snapshot.val();
-            document.getElementById("taskai").textContent = nauji;
-            rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
-          }
-        });
-      } catch (error) {
-        console.error("Funkcijos klaida:", error);
-        rodytZinute("Klaida: " + error.message, "red");
-      }
+      taskaiRef.get().then((snapshot) => {
+        let dabartiniai = snapshot.val() || 0;
+        let nauji = dabartiniai + kiekis;
+        if (nauji < -10) {
+          rodytZinute("Negalima mažiau nei –10!", "orange");
+          return;
+        }
+        taskaiRef.set(nauji);
+        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+      });
     }
 
     function rodytZinute(text, color) {
@@ -104,6 +67,18 @@
       zinute.style.color = color;
       zinute.style.opacity = 1;
       setTimeout(() => { zinute.style.opacity = 0; }, 1000);
+    }
+
+    function rodytiParduotuve() {
+      fetch("parduotuves_puslapis/parduotuve/parduotuve.html")
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById("parduotuveSekcija").innerHTML = html;
+        })
+        .catch(err => {
+          document.getElementById("parduotuveSekcija").innerHTML = "<p style='color:red;'>Nepavyko įkelti parduotuvės.</p>";
+          console.error("Klaida:", err);
+        });
     }
   </script>
 </body>
