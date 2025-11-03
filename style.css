@@ -1,0 +1,67 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f2f2f2;
+}
+
+button {
+  margin: 5px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #ccc;
+  transition: transform 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* Mygtukų stiliai */
+.mygtukas1 {
+  background: linear-gradient(to bottom, #87CEFA, #1E90FF);
+  color: white;
+}
+
+.mygtukas2 {
+  background: linear-gradient(to bottom, #FFB6C1, #FF1493);
+  color: white;
+}
+
+.mygtukas3 {
+  background: linear-gradient(to bottom, #98FB98, #228B22);
+  color: white;
+}
+
+/* Tekstūros */
+.texture1 {
+  background: linear-gradient(135deg, #90D5FF, #adc0c0);
+  color: white;
+}
+
+.texture2 {
+  background: linear-gradient(135deg, #ff66cc, #bf9ec0);
+  color: white;
+}
+
+.texture3 {
+  background: linear-gradient(135deg, #9ACD32, #cee4b5);
+  color: black;
+}
+
+#zinute {
+  transition: opacity 0.5s;
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+#taskai {
+  font-size: 30px;
+  margin: 10px;
+}
+
+.preke {
+  margin: 5px 0;
+}
