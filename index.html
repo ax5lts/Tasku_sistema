@@ -1,19 +1,36 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
-  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Taškų sistema</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Papildoma stiliaus dalis žinutei */
+    #zinute {
+      font-size: 18px;
+      font-weight: bold;
+      transition: opacity 0.5s ease;
+      opacity: 0;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
   <h1>Taškų sistema ❤️</h1>
+
+  <!-- Pagrindinis taškų skaičius -->
   <div id="taskai">0</div>
 
+  <!-- Žinutė rodoma po taškų skaičiumi -->
+  <div id="zinute"></div>
+
+  <!-- Nustatymų mygtukas -->
   <button class="nustatymai-btn mygtukas1" onclick="rodytiArbaPasleptiNustatymus()">Nustatymai</button>
 
-  <div id="nustatymaiSekcija" style="display: none; margin-top: 20px;">
+  <!-- Nustatymų sekcija -->
+  <div id="nustatymaiSekcija">
     <h3>Nustatymai</h3>
     <label for="textureSelect">Pasirinkite mygtukų tekstūrą:</label>
     <select id="textureSelect" onchange="pakeistiMygtukuTekstura(this.value)">
@@ -25,169 +42,239 @@
 
   <br><br>
 
+  <!-- Istorijos sekcija -->
   <button onclick="rodytiArbaPasleptiIstorija()">Istorija</button>
-  <div id="istorijaSekcija" style="display:none;">
+  <div id="istorijaSekcija">
     <h2>Istorija</h2>
     <div id="istorija"></div>
   </div>
 
+  <!-- Parduotuvės sekcija -->
   <button onclick="rodytiArbaPasleptiParduotuve()">Parduotuvė</button>
-  <div id="zinute"></div>
-
-  <div id="parduotuveSekcija" style="display:none;">
-    <h2><b>Parduotuvė</b></h2>
-    <div class="preke">Nugaros masažas – 5 taškai 
-      <button class="tasko-mygtukas pirkti" onclick="pirkti(5)">Pirkti</button>
+  <div id="parduotuveSekcija">
+    <div class="preke">Nugaros masažas 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(5)">- 5</button>
     </div>
-    <div class="preke">Gėrimas – 3 taškai 
-      <button class="tasko-mygtukas pirkti" onclick="pirkti(3)">Pirkti</button>
+    <div class="preke">Gėrimas  
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(3)">- 3</button>
     </div>
-    <div class="preke">Kelionė – 50 taškų 
-      <button class="tasko-mygtukas pirkti" onclick="pirkti(50)">Pirkti</button>
+    <div class="preke">Kelionė  
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(50)">- 50</button>
+    </div>
+    <div class="preke">Arbata į lovą 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(2)">- 2</button>
+    </div>
+    <div class="preke">Maisto užsakymas tavo pasirinkimu 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(3)">- 3</button>
+    </div>
+    <div class="preke">Viena -- "Aš buvau teisus(-i)" 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(6)">- 6</button>
+    </div>
+    <div class="preke">Pasivaikščiojimas, kai tingi, bet nori 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(4)">- 4</button>
+    </div>
+    <div class="preke">Pasirinkti Filmą/Serialui vakarui 
+      <button class="tasko-mygtukas pirkti" onclick="pirkti(3)">– 3</button>
     </div>
   </div>
 
+  <!-- Kainoraščio sekcija -->
   <button onclick="rodytiArbaPasleptiKainorasti()">Kainoraštis</button>
-  <div id="kainorastis" style="display:none;">
-    <h2><b>Kainoraštis</b></h2>
-    <div class="preke">Pakloti lovą +1 taškas 
+  <div id="kainorastis">
+
+    <div class="preke">Pakloti lovą  
       <button class="tasko-mygtukas plius" onclick="keistiTaskus(1)">+1</button>
     </div>
-    <div class="preke">Būti mandagiam +2 taškai 
+    <div class="preke">Būti mandagiam  
       <button class="tasko-mygtukas plius" onclick="keistiTaskus(2)">+2</button>
     </div>
-    <div class="preke">Pusryčiai į lovą +2 taškai 
+    <div class="preke">Pusryčiai į lovą  
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(2)">+2</button>
+    </div>
+    <div class="preke">Atnešei valgyti į lovą 
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(2)">+2</button>
+    </div>
+     <div class="preke">Palaikei nuotaiką, kai buvau susinervinęs(-us) 
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(3)">+3</button>
+    </div>
+    <div class="preke">Padarei komplimentą 
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(1)">+1</button>
+    </div>
+    <div class="preke">Išsirinkai filmą, kuris abiem patiko 
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(1)">+1</button>
+    </div>
+    <div class="preke">Pagirdei gera idėja ar pasiūlymu 
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(1)">+1</button>
+    </div>
+    <div class="preke">Pagaminai ką nors skanaus +2 taškai
+      <button class="tasko-mygtukas plius" onclick="keistiTaskus(2)">+2</button>
+    </div>
+    <div class="preke">Pasisiūlei kartu eiti į nuobodų reikalą 
       <button class="tasko-mygtukas plius" onclick="keistiTaskus(2)">+2</button>
     </div>
   </div>
 
+  <!-- Atimimo sekcija -->
   <button onclick="rodytiArbaPasleptiminusus()">Atimimas</button>
-  <div id="atimti" style="display:none;">
-    <h2><b>Už ką numinusuoti</b></h2>
-    <div class="preke">Už patyčias -2 taškai 
+  <div id="atimti">
+
+    <div class="preke">Už patyčias  
       <button class="tasko-mygtukas minus" onclick="keistiTaskus(-2)">-2</button>
     </div>
-    <div class="preke">Buvimu šaltu -3 taškai 
+    <div class="preke">Buvimu šaltu  
+      <button class="tasko-mygtukas minus" onclick="keistiTaskus(-3)">-3</button>
+    </div>
+     <div class="preke">Pavėluoji daugiau nei 15 min 
+      <button class="tasko-mygtukas minus" onclick="keistiTaskus(-2)">-2</button>
+    </div>
+    <div class="preke">Užknisi dėl smulkmenų 
+      <button class="tasko-mygtukas minus" onclick="keistiTaskus(-2)">-2</button>
+    </div>
+    <div class="preke">Nepasakai „ačiū“ už kažką 
+      <button class="tasko-mygtukas minus" onclick="keistiTaskus(-1)">-1</button>
+    </div>
+    <div class="preke">Išjungei filmą be leidimo 
+      <button class="tasko-mygtukas minus" onclick="keistiTaskus(-1)">-1</button>
+    </div>
+    <div class="preke">Kai specialiai erzini 
       <button class="tasko-mygtukas minus" onclick="keistiTaskus(-3)">-3</button>
     </div>
   </div>
 
-  <script>
-    // Firebase konfigūracija
-    const firebaseConfig = {
-      apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
-      authDomain: "tasku-130d8.firebaseapp.com",
-      databaseURL: "https://tasku-130d8-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "tasku-130d8",
-      storageBucket: "tasku-130d8.appspot.com",
-      messagingSenderId: "861286931659",
-      appId: "1:861286931659:web:c899e1fcf782aba4514f4e",
-      measurementId: "G-W9XSC0SJVJ"
-    };
+<script>
+  // Firebase konfigūracija
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSEUQ_J3TUbw0EvxNRm8jW7lE82CpxNb8",
+    authDomain: "tasku-130d8.firebaseapp.com",
+    databaseURL: "https://tasku-130d8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "tasku-130d8",
+    storageBucket: "tasku-130d8.appspot.com",
+    messagingSenderId: "861286931659",
+    appId: "1:861286931659:web:c899e1fcf782aba4514f4e",
+    measurementId: "G-W9XSC0SJVJ"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const taskaiRef = db.ref("taskai");
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const taskaiRef = db.ref("taskai");
 
-    // Atvaizduoja taškus realiu laiku
-    taskaiRef.on("value", (snapshot) => {
-      const value = snapshot.val();
-      document.getElementById("taskai").textContent = value !== null ? value : 0;
-    });
-
-    function pakeistiMygtukuTekstura(klase) {
+  // --- 🌈 Įkeliant puslapį — pritaikome išsaugotą spalvą ---
+  window.addEventListener("load", () => {
+    const savedTexture = localStorage.getItem("pasirinktaTekstura");
+    if (savedTexture) {
       document.querySelectorAll("button").forEach(btn => {
-        btn.classList.remove("texture1", "texture2", "texture3");
-        btn.classList.add(klase);
+        btn.classList.add(savedTexture);
       });
+      const select = document.getElementById("textureSelect");
+      if (select) select.value = savedTexture;
     }
+  });
 
-    function keistiTaskus(kiekis) {
-      taskaiRef.get().then((snapshot) => {
-        let dabartiniai = snapshot.val() || 0;
-        let nauji = dabartiniai + kiekis;
-        if (nauji < -10) {
-          rodytZinute("Negalima mažiau nei –10!", "orange");
-          return;
-        }
+  // --- Keičia visų mygtukų tekstūrą + išsaugo ---
+  function pakeistiMygtukuTekstura(klase) {
+    document.querySelectorAll("button").forEach(btn => {
+      btn.classList.remove("texture1", "texture2", "texture3");
+      btn.classList.add(klase);
+    });
+    localStorage.setItem("pasirinktaTekstura", klase); //  išsaugoma naršyklėje
+  }
 
-        taskaiRef.set(nauji);
+  // Klausosi taškų pokyčių
+  taskaiRef.on("value", (snapshot) => {
+    const value = snapshot.val();
+    document.getElementById("taskai").textContent = value !== null ? value : 0;
+  });
 
-        const istorijaRef = db.ref("istorija");
-        istorijaRef.push({
-          pokytis: kiekis,
-          naujaReiksme: nauji,
-          laikas: new Date().toLocaleString()
-        });
-
-        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
-      });
-    }
-
-    function rodytiIstorija() {
+  // Keičia taškus
+  function keistiTaskus(kiekis) {
+    taskaiRef.get().then((snapshot) => {
+      let dabartiniai = snapshot.val() || 0;
+      let nauji = dabartiniai + kiekis;
+      if (nauji < -10) {
+        rodytZinute("Negalima mažiau nei –10!", "orange");
+        return;
+      }
+      taskaiRef.set(nauji);
       const istorijaRef = db.ref("istorija");
-      istorijaRef.once("value", (snapshot) => {
-        const data = snapshot.val();
-        const istorijaDiv = document.getElementById("istorija");
-        istorijaDiv.innerHTML = ""; 
-
-        if (data) {
-          Object.values(data).reverse().forEach(entry => {
-            const p = document.createElement("p");
-            p.textContent = `${entry.laikas}: ${entry.pokytis > 0 ? "+" : ""}${entry.pokytis} (viso: ${entry.naujaReiksme})`;
-            istorijaDiv.appendChild(p);
-          });
-        } else {
-          istorijaDiv.textContent = "Istorija tuščia.";
-        }
+      istorijaRef.push({
+        pokytis: kiekis,
+        naujaReiksme: nauji,
+        laikas: new Date().toLocaleString()
       });
-    }
+      rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+    });
+  }
 
-    function rodytZinute(text, color) {
-      const zinute = document.getElementById("zinute");
-      zinute.textContent = text;
-      zinute.style.color = color;
-      zinute.style.opacity = 1;
-      setTimeout(() => { zinute.style.opacity = 0; }, 1500);
-    }
+  // Rodo istoriją
+  function rodytiIstorija() {
+    const istorijaRef = db.ref("istorija");
+    istorijaRef.once("value", (snapshot) => {
+      const data = snapshot.val();
+      const istorijaDiv = document.getElementById("istorija");
+      istorijaDiv.innerHTML = "";
+      if (data) {
+        Object.values(data).reverse().forEach(entry => {
+          const p = document.createElement("p");
+          p.textContent = `${entry.laikas}: ${entry.pokytis > 0 ? "+" : ""}${entry.pokytis} (viso: ${entry.naujaReiksme})`;
+          istorijaDiv.appendChild(p);
+        });
+      } else {
+        istorijaDiv.textContent = "Istorija tuščia.";
+      }
+    });
+  }
 
-    function rodytiArbaPasleptiIstorija() {
-      const sekcija = document.getElementById("istorijaSekcija");
-      sekcija.style.display = sekcija.style.display === "none" || sekcija.style.display === "" ? "block" : "none";
-      if (sekcija.style.display === "block") rodytiIstorija();
-    }
+  // Žinutės rodymas
+  function rodytZinute(text, color) {
+    const zinute = document.getElementById("zinute");
+    zinute.textContent = text;
+    zinute.style.color = color;
+    zinute.style.opacity = 1;
+    setTimeout(() => { zinute.style.opacity = 0; }, 1500);
+  }
 
-    function rodytiArbaPasleptiNustatymus() {
-      const sekcija = document.getElementById("nustatymaiSekcija");
-      sekcija.style.display = sekcija.style.display === "none" || sekcija.style.display === "" ? "block" : "none";
+  // Sekcijų perjungimai
+  function rodytiArbaPasleptiIstorija() {
+    const sekcija = document.getElementById("istorijaSekcija");
+    sekcija.classList.toggle("aktyvus");
+    if (sekcija.classList.contains("aktyvus")) {
+      rodytiIstorija();
     }
+  }
 
-    function rodytiArbaPasleptiParduotuve() {
-      const sekcija = document.getElementById("parduotuveSekcija");
-      sekcija.style.display = sekcija.style.display === "none" || sekcija.style.display === "" ? "block" : "none";
-    }
+  function rodytiArbaPasleptiNustatymus() {
+    const sekcija = document.getElementById("nustatymaiSekcija");
+    sekcija.classList.toggle("aktyvus");
+  }
 
-    function rodytiArbaPasleptiKainorasti() {
-      const sekcija = document.getElementById("kainorastis");
-      sekcija.style.display = sekcija.style.display === "none" || sekcija.style.display === "" ? "block" : "none";
-    }
+  function rodytiArbaPasleptiParduotuve() {
+    const sekcija = document.getElementById("parduotuveSekcija");
+    sekcija.classList.toggle("aktyvus");
+  }
 
-    function rodytiArbaPasleptiminusus() {
-      const sekcija = document.getElementById("atimti");
-      sekcija.style.display = sekcija.style.display === "none" || sekcija.style.display === "" ? "block" : "none";
-    }
+  function rodytiArbaPasleptiKainorasti() {
+    const sekcija = document.getElementById("kainorastis");
+    sekcija.classList.toggle("aktyvus");
+  }
 
-    function pirkti(kaina) {
-      taskaiRef.get().then((snapshot) => {
-        let dabartiniai = snapshot.val() || 0;
-        if (dabartiniai >= kaina) {
-          taskaiRef.set(dabartiniai - kaina);
-          alert("Prekė nupirkta!");
-        } else {
-          alert("Nepakanka taškų!");
-        }
-      });
-    }
-  </script>
+  function rodytiArbaPasleptiminusus() {
+    const sekcija = document.getElementById("atimti");
+    sekcija.classList.toggle("aktyvus");
+  }
+
+  // Pirkimo funkcija
+  function pirkti(kaina) {
+    taskaiRef.get().then((snapshot) => {
+      let dabartiniai = snapshot.val() || 0;
+      if (dabartiniai >= kaina) {
+        taskaiRef.set(dabartiniai - kaina);
+        alert("Prekė nupirkta!");
+      } else {
+        alert("Nepakanka taškų!");
+      }
+    });
+  }
+</script>
+
 </body>
 </html>

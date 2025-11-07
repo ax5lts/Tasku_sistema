@@ -2,24 +2,31 @@ body {
   font-family: Arial, sans-serif;
   text-align: center;
   background-color: #f2f2f2;
+  background-image: url('Copilot_20251103_165956.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
 }
 
+/* Bendras mygtukų stilius */
 button {
-  margin: 5px;
+  margin: 10px;
   padding: 8px 16px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   font-weight: bold;
   background-color: #ccc;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.3s;
 }
 
 button:hover {
   transform: scale(1.05);
 }
 
-/* Mygtukų stiliai */
+/* Mygtukų spalvos */
 .mygtukas1 {
   background: linear-gradient(to bottom, #87CEFA, #1E90FF);
   color: white;
@@ -35,7 +42,7 @@ button:hover {
   color: white;
 }
 
-/* Tekstūros */
+/* Tekstūros pasirinkimai */
 .texture1 {
   background: linear-gradient(135deg, #90D5FF, #adc0c0);
   color: white;
@@ -51,17 +58,93 @@ button:hover {
   color: black;
 }
 
+/* Žinutės laukas */
 #zinute {
   transition: opacity 0.5s;
   margin-top: 10px;
   font-size: 18px;
 }
 
+/* Taškų skaičiaus stilius */
 #taskai {
   font-size: 30px;
   margin: 10px;
 }
 
+/* Sekcijų perėjimas */
+#parduotuveSekcija,
+#kainorastis,
+#istorijaSekcija,
+#nustatymaiSekcija,
+#atimti {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+
+#parduotuveSekcija.aktyvus,
+#kainorastis.aktyvus,
+#istorijaSekcija.aktyvus,
+#nustatymaiSekcija.aktyvus,
+#atimti.aktyvus {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+/* Kortelių išdėstymas (2 stulpeliai) */
+#parduotuveSekcija,
+#kainorastis,
+#atimti {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  justify-items: center;
+  padding: 10px;
+}
+
 .preke {
-  margin: 5px 0;
+  background:none;
+  border-radius: 12px;
+  padding: 12px;
+  width: 90%;
+  max-width: 350px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-weight: 500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preke:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Sekcijų pavadinimai */
+h2 {
+  grid-column: 1 / -1;
+  background: linear-gradient(to right, #ffb6c1, #ffcce0);
+  color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  margin: 15px 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  #taskai {
+    font-size: 24px;
+  }
+
+  button {
+    display: block;
+    width: 80%;
+    margin: 10px auto;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
 }
