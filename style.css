@@ -11,17 +11,24 @@ body {
 }
 /* Nustatymų mygtukas */
 .nustatymai-btn {
+
   position: fixed;
   top: 10px;
   left: 10px;
   z-index: 9999;
+  padding: 10px 14px;
   background: #1e1e1e;
   color: white;
-  padding: 10px 14px;
   border: 1px solid #fff;
-  border-radius: 10px;
+  border-radius: 20px;
   cursor: pointer;
+
+  /* pašalinam viską, ką mygtukas1 primeta */
+  display: flex !important;
+  margin: 0 !important;
+  width: auto !important;
 }
+
 #nustatymaiSekcija {
   position: fixed;       /* kad būtų šalia mygtuko */
   top: 60px;             /* kiek žemiau nuo mygtuko */
@@ -48,7 +55,7 @@ body {
 button {
   margin: 10px;
   padding: 8px 16px;
-  border-radius: 10px;
+  border-radius: 30px;
   border: none;
   cursor: pointer;
   font-weight: bold;
