@@ -9,6 +9,40 @@ body {
   margin: 0;
   padding: 0;
 }
+/* Nustatymų mygtukas */
+.nustatymai-btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  background: #1e1e1e;
+  color: white;
+  padding: 10px 14px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+#nustatymaiSekcija {
+  position: fixed;       /* kad būtų šalia mygtuko */
+  top: 60px;             /* kiek žemiau nuo mygtuko */
+  left: 10px;            /* pririšta prie kairės */
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 9998;
+  width: 200px;          /* kad būtų tvarkingo dydžio */
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;      /* slėpti, kas netelpa */
+  transition: all 0.3s ease;
+}
+
+#nustatymaiSekcija.aktyvus {
+  opacity: 1;
+  max-height: 500px;     /* užtenka, kad tilptų turinys */
+}
+
 
 /* Bendras mygtukų stilius */
 button {
