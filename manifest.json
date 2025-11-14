@@ -1,6 +1,6 @@
 {
   "name": "Tasku Sistema",
-  "short_name": "TS",
+  "short_name": "Tasku Sistema",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
