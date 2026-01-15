@@ -153,10 +153,54 @@
     </div>
   </div>
 
+  <br>
+  <hr>
+
+<div class="container">
+    <h2>Dienų skaičiuoklė</h2>
+    <p>Pasirinkite datą ir sužinokite, kiek dienų praėjo nuo tada iki šiandien.</p>
+
+    <div class="controls">
+        <select id="metai"></select>
+
+        <select id="menuo">
+            <option value="0">Sausis</option>
+            <option value="1">Vasaris</option>
+            <option value="2">Kovas</option>
+            <option value="3">Balandis</option>
+            <option value="4">Gegužė</option>
+            <option value="5">Birželis</option>
+            <option value="6">Liepa</option>
+            <option value="7">Rugpjūtis</option>
+            <option value="8">Rugsėjis</option>
+            <option value="9">Spalis</option>
+            <option value="10">Lapkritis</option>
+            <option value="11">Gruodis</option>
+        </select>
+
+        <select id="diena"></select>
+
+        <button onclick="skaiciuotiSkirtuma()">Skaičiuoti</button>
+    </div>
+
+    <table id="rezultatuLentele">
+        <thead>
+            <tr>
+                <th>Pasirinkta data</th>
+                <th>Dienų skirtumas</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+
+
   <script src="script.js"></script>
 </body>
 <footer>
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
   <hr>
 <h5>© 2024 Taškų sistema - padaryta su meile</h5>
 </footer>

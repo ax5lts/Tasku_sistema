@@ -91,7 +91,7 @@ function keistiTaskus(kiekis) {
         return;
     }
     taskaiRef.get().then((snapshot) => {
-        let dabartiniai = snapshot.val() || 0;
+        let dabartiniai = Number(snapshot.val()) || 0;
         let nauji = dabartiniai + kiekis;
         if (nauji < -10) {
             rodytZinute("Negalima mažiau nei –10!", "orange");
@@ -105,6 +105,9 @@ function keistiTaskus(kiekis) {
             laikas: new Date().toLocaleString()
         });
         rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
+    }).catch((error) => {
+        console.error("Klaida keičiant taškus:", error);
+        rodytZinute("Klaida! Nepavyko pakeisti taškų.", "red");
     });
 }
 
@@ -187,7 +190,7 @@ function keistiTaskus(kiekis) {
         return;
     }
     taskaiRef.get().then((snapshot) => {
-      const dabartiniai = snapshot.val() || 0;
+      const dabartiniai = Number(snapshot.val()) || 0;
       if (dabartiniai >= kaina) {
         // Panaudojame `keistiTaskus`, kad išlaikytume vieningą logiką 
         // (istorijos įrašas, taškų limito patikra).
@@ -197,3 +200,79 @@ function keistiTaskus(kiekis) {
       }
     });
   }
+
+  
+// 1. UŽPILDU KONTROLES (Metus ir Dienas)
+const metuSelect = document.getElementById('metai');
+const dienosSelect = document.getElementById('diena');
+const dabartiniaiMetai = new Date().getFullYear();
+
+// Sugeneruojame metus nuo 1900 iki dabar
+for (let i = dabartiniaiMetai; i >= 1900; i--) {
+    let opt = document.createElement('option');
+    opt.value = i;
+    opt.innerHTML = i;
+    metuSelect.appendChild(opt);
+}
+
+// Sugeneruojame dienas 1-31
+for (let i = 1; i <= 31; i++) {
+    let opt = document.createElement('option');
+    opt.value = i;
+    opt.innerHTML = i;
+    dienosSelect.appendChild(opt);
+}
+
+// 2. FUNKCIJA REZULTATUI Į LENTELĘ ĮRAŠYTI
+function rodytiRezultataLenteleje(dataText, dienuTekstas) {
+    const lentele = document.getElementById('rezultatuLentele').getElementsByTagName('tbody')[0];
+    lentele.innerHTML = ""; // Išvalome seną, kad liktų tik vienas įrašas
+    
+    const naujaEilute = lentele.insertRow(0);
+    const celeData = naujaEilute.insertCell(0);
+    const celeDienos = naujaEilute.insertCell(1);
+
+    celeData.innerHTML = dataText;
+    celeDienos.innerHTML = dienuTekstas;
+}
+
+// 3. PAGRINDINĖ SKAIČIAVIMO FUNKCIJA
+function skaiciuotiSkirtuma() {
+    const y = parseInt(document.getElementById('metai').value);
+    const m = parseInt(document.getElementById('menuo').value);
+    const d = parseInt(document.getElementById('diena').value);
+
+    const pasirinktaData = new Date(y, m, d);
+    const siandien = new Date();
+    siandien.setHours(0, 0, 0, 0); // Sulyginame laiką tiksliam dienų skaičiavimui
+
+    const skirtumasMilisekundemis = siandien - pasirinktaData;
+    const dienos = Math.floor(skirtumasMilisekundemis / (1000 * 60 * 60 * 24));
+
+    // Suformuojame tekstą
+    const datosTekstas = `${y}-${(m + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+    let dienuStatusas = "";
+
+    if (dienos >= 0) {
+        dienuStatusas = `<span style="color: green; font-weight: bold;">Praėjo ${dienos} d.</span>`;
+    } else {
+        dienuStatusas = `<span style="color: orange; font-weight: bold;">Liko ${Math.abs(dienos)} d.</span>`;
+    }
+
+    // Parodome ekrane
+    rodytiRezultataLenteleje(datosTekstas, dienuStatusas);
+
+    // IŠSAUGOME: kad perkrovus nedingtų
+    localStorage.setItem('saugykla_data', datosTekstas);
+    localStorage.setItem('saugykla_rezultatas', dienuStatusas);
+}
+
+// 4. AUTOMATINIS UŽKROVIMAS PERKROVUS PUSLAPĮ
+window.addEventListener("load", () => {
+    const issaugotaData = localStorage.getItem('saugykla_data');
+    const issaugotasRezultatas = localStorage.getItem('saugykla_rezultatas');
+
+    if (issaugotaData && issaugotasRezultatas) {
+        rodytiRezultataLenteleje(issaugotaData, issaugotasRezultatas);
+    }
+});

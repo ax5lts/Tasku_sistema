@@ -229,3 +229,55 @@ h2 {
 }
 }
 
+hr {
+    margin: 5px 0; /* Tik 5px tarpas vietoje standartinio didelio tarpo */
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1); /* Švelni linija */
+}
+
+.container {
+    text-align: center;
+    padding: 10px 20px; /* Sumažiname vidinį tarpą (padding) */
+    margin: 0 auto;     /* Panaikiname išorinius viršaus/apačios tarpus */
+    max-width: 500px;
+    background: none;   /* Kadangi norėjai permatomo */
+    box-shadow: none;   /* Pašaliname šešėlį, jei jis stumia elementus */
+}
+
+/* Suglaudžiame antraštes ir tekstą */
+h2 {
+    margin-top: 0;      /* Panaikiname tarpą virš "Dienų skaičiuoklė" */
+    margin-bottom: 10px;
+}
+
+p {
+    margin-bottom: 15px; /* Mažesnis tarpas po aprašymu */
+}
+
+/* 1. Valdiklių (select ir button) centravimas */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;               /* Tarpai tarp pasirinkimų */
+    margin-bottom: 20px;
+}
+
+/* 2. Lentelės centravimas */
+table {
+    margin: 20px auto;       /* auto sucentruoja pačią lentelę */
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;      /* Sucentruoja tekstą lentelės viduje */
+}
+.controls select, .controls button {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
