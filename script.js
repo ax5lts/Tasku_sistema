@@ -97,17 +97,19 @@ function keistiTaskus(kiekis) {
             rodytZinute("Negalima mažiau nei –10!", "orange");
             return;
         }
-        taskaiRef.set(nauji);
-        const istorijaRef = db.ref(istorijaPath);
-        istorijaRef.push({
-            pokytis: kiekis,
-            naujaReiksme: nauji,
-            laikas: new Date().toLocaleString()
+        return taskaiRef.set(nauji).then(() => {
+            const istorijaRef = db.ref(istorijaPath);
+            istorijaRef.push({
+                pokytis: kiekis,
+                naujaReiksme: nauji,
+                laikas: new Date().toLocaleString(),
+                vartotojas: manoRolė || "Nežinomas"
+            });
+            rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
         });
-        rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
     }).catch((error) => {
         console.error("Klaida keičiant taškus:", error);
-        rodytZinute("Klaida! Nepavyko pakeisti taškų.", "red");
+        rodytZinute("Klaida: " + (error.code || error.message), "red");
     });
 }
 
@@ -123,7 +125,8 @@ function keistiTaskus(kiekis) {
       if (data) {
         Object.values(data).reverse().forEach(entry => {
           const p = document.createElement("p");
-          p.textContent = `${entry.laikas}: ${entry.pokytis > 0 ? "+" : ""}${entry.pokytis} (viso: ${entry.naujaReiksme})`;
+          const kas = entry.vartotojas ? ` [${entry.vartotojas}]` : "";
+          p.textContent = `${entry.laikas}${kas}: ${entry.pokytis > 0 ? "+" : ""}${entry.pokytis} (viso: ${entry.naujaReiksme})`;
           istorijaDiv.appendChild(p);
         });
       } else {
@@ -198,6 +201,9 @@ function keistiTaskus(kiekis) {
       } else {
         rodytZinute("Nepakanka taškų!", "orange");
       }
+    }).catch((error) => {
+        console.error("Klaida perkant:", error);
+        rodytZinute("Klaida tikrinant taškus!", "red");
     });
   }
 
