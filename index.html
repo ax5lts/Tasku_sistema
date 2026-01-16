@@ -27,7 +27,16 @@
   <h1>Taškų sistema ❤️</h1>
 
   <!-- Pagrindinis taškų skaičius -->
-  <div id="taskai">0</div>
+  <div id="taskai-container" style="display: flex; justify-content: center; gap: 40px; margin: 10px;">
+    <div style="text-align: center;">
+        <h2 style="margin: 0; font-size: 20px; color: #000000;">Kajus</h2>
+        <div id="taskai_user1" style="font-size: 30px; font-weight: bold;">0</div>
+    </div>
+    <div style="text-align: center;">
+        <h2 style="margin: 0; font-size: 20px; color: #000000;">Akvile</h2>
+        <div id="taskai_user2" style="font-size: 30px; font-weight: bold;">0</div>
+    </div>
+  </div>
 
   <!-- Žinutė rodoma po taškų skaičiumi -->
   <div id="zinute"></div>
@@ -37,13 +46,15 @@
 
   <!-- Nustatymų sekcija -->
 <div id="nustatymaiSekcija">
-    <h3>Prisijungti prie poros</h3>
-    <input type="number" id="otpKodas" placeholder="6 skaičių kodas" style="width: 140px; padding: 5px; text-align: center;">
-    <button onclick="prijungtiKoda()">Prisijungti</button>
+    <h3>Pasirinkite kas esate</h3>
+    <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+        <button onclick="pasirinktiVartotoja('user1')">Aš esu Kajus</button>
+        <button onclick="pasirinktiVartotoja('user2')">Aš esu Akvilė</button>
+    </div>
     <p id="kambarioStatusas" style="font-size: 12px;"></p>
     <hr>
     <h3>Išvaizda</h3>
-    <select id="textureSelect" onchange="pakeistiMygtukuTekstura(this.value)">
+    <select id="Textura" onchange="pakeistiMygtukuTekstura(this.value)">
       <option value="texture1">Šviesiai Mėlynas</option>
       <option value="texture2">Rožinė</option>
       <option value="texture3">Žalia</option>
@@ -158,12 +169,11 @@
 
 <div class="container">
     <h2>Dienų skaičiuoklė</h2>
-    <p>Pasirinkite datą ir sužinokite, kiek dienų praėjo nuo tada iki šiandien.</p>
 
-    <div class="controls">
+    <div class="controls" id="datosValdykliai">
         <select id="metai"></select>
 
-        <select id="menuo">
+        <select class="menuo" id="menuo">
             <option value="0">Sausis</option>
             <option value="1">Vasaris</option>
             <option value="2">Kovas</option>
@@ -182,6 +192,9 @@
 
         <button onclick="skaiciuotiSkirtuma()">Skaičiuoti</button>
     </div>
+    <div id="atstatymoBlokas" style="display: none; text-align: center; margin-bottom: 10px;">
+        <button onclick="rodytiPasirinkimaIsNaujo()" style="font-size: 12px; padding: 5px 10px;">🔄 Keisti datą</button>
+    </div>
 
     <table id="rezultatuLentele">
         <thead>
@@ -195,6 +208,16 @@
     </table>
 </div>
 
+<!-- OTP Modalas (PIN kodo įvedimas) -->
+<div id="otpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+        <h3 style="margin-top: 0; color: #333;">Įveskite PIN kodą</h3>
+        <input type="password" id="otpInput" placeholder="****" style="font-size: 24px; padding: 5px; width: 100px; text-align: center; letter-spacing: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+        <br>
+        <button onclick="patvirtintiOTP()" style="background: #28a745; color: white;">Patvirtinti</button>
+        <button onclick="uzdarytiOTP()" style="background: #dc3545; color: white;">Atšaukti</button>
+    </div>
+</div>
 
 
   <script src="script.js"></script>

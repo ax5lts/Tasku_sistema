@@ -14,90 +14,198 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let taskaiRef; 
+let viewRef1, viewRef2; // Nuorodos stebėjimui
 let istorijaPath;
 let manoRolė = ""; // "vyras" arba "moteris" (arba user1/user2)
+let pendingRole = null; // Laikinas kintamasis pasirinkimui
+let prevUser1Points = null, prevUser2Points = null; // Kintamieji pranešimų sekimui
+
+const PIN_CODES = {
+    "user1": "1111", // Kajaus PIN kodas
+    "user2": "2222"  // Akvilės PIN kodas
+};
 
 window.addEventListener("load", () => {
     // Išvaizdos krovimas (tavo senas kodas)
+    // Išvaizdos krovimas ir valdymas
     const savedTexture = localStorage.getItem("pasirinktaTekstura");
+    const textureSelect = document.getElementById("textureSelect");
+
+    if (textureSelect) {
+        if (savedTexture) textureSelect.value = savedTexture;
+        // Klausome pakeitimų, kad iškart keistųsi spalva
+        textureSelect.addEventListener("change", function() {
+            taikytiTekstura(this.value);
+        });
+    }
+
     if (savedTexture) {
         document.querySelectorAll("button:not(#nustatymaiBtn)").forEach(btn => btn.classList.add(savedTexture));
         if (document.getElementById("textureSelect")) document.getElementById("textureSelect").value = savedTexture;
+        taikytiTekstura(savedTexture);
     }
 
-    // Automatinis prisijungimas, jei kodas jau buvo įvestas anksčiau
-    const issaugotasKodas = localStorage.getItem("kambarioKodas");
-    if (issaugotasKodas) {
-        document.getElementById("otpKodas").value = issaugotasKodas;
-        prijungtiKoda(true); 
+    // Patikriname, ar vartotojas jau pasirinko rolę
+    const issaugotaRole = localStorage.getItem("manoRole");
+    if (issaugotaRole) {
+        pasirinktiVartotoja(issaugotaRole, true);
+    } else {
+        // Jei nepasirinko, vis tiek rodome taškus (tik žiūrėjimo režimas)
+        nustatytiKambari();
+    }
+
+    // Atstatome datos skaičiuoklės būseną (perkelta iš apačios)
+    const issaugotaData = localStorage.getItem('saugykla_data');
+    const issaugotasRezultatas = localStorage.getItem('saugykla_rezultatas');
+    const busena = localStorage.getItem('datos_formos_busena');
+
+    if (issaugotaData && issaugotasRezultatas) {
+        rodytiRezultataLenteleje(issaugotaData, issaugotasRezultatas);
+    }
+    if (busena === 'paslepta') {
+        const dv = document.getElementById('datosValdykliai');
+        const ab = document.getElementById('atstatymoBlokas');
+        if (dv) dv.style.display = "none";
+        if (ab) ab.style.display = "block";
+    }
+
+    // Leidžiame patvirtinti PIN kodą paspaudus ENTER
+    const otpInput = document.getElementById("otpInput");
+    if (otpInput) {
+        otpInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                patvirtintiOTP();
+            }
+        });
     }
 });
 
-function prijungtiKoda(isLoad = false) {
-    const kodas = document.getElementById("otpKodas").value;
-    if (kodas.length !== 6) {
-        if(!isLoad) alert("Įveskite 6 skaičių kodą!");
+function pasirinktiVartotoja(role, isLoad = false) {
+    if (isLoad) {
+        // Jei kraunama iš atminties (refresh), kodo nereikia
+        uzbaigtiPasirinkima(role, true);
         return;
     }
-
-    // Išsaugome kodą naršyklėje
-    localStorage.setItem("kambarioKodas", kodas);
     
-    // ČIA LOGIKA: 
-    // Kadangi tai porų programėlė, galime naudoti paprastą būdą:
-    // Pirmas prisijungęs prie kodo mato antro taškus, antras – pirmo.
-    // Kad būtų paprasčiau, galime leisti vartotojui pasirinkti, kas jis yra, 
-    // ARBA tiesiog naudoti įrenginio ID. Šiuo atveju naudosime tavo idėją:
-    // "Matau kito taškus".
-    
-    // Kiekvienam kambariui išsaugome rolę atskirai
-    const rolesRaktas = `manoRole_${kodas}`;
-    if (!localStorage.getItem(rolesRaktas)) {
-        let pasirinkimas = confirm("Ar tu esi tas, kuris RINKA taškus? (Spausk OK - Taip, Cancel - Ne, aš stebiu kito taškus)");
-        manoRolė = pasirinkimas ? "user1" : "user2";
-        localStorage.setItem(rolesRaktas, manoRolė);
-    } else {
-        manoRolė = localStorage.getItem(rolesRaktas);
+    // Atidarome PIN kodo langą
+    pendingRole = role;
+    const modal = document.getElementById("otpModal");
+    const input = document.getElementById("otpInput");
+    if (modal && input) {
+        modal.style.display = "flex";
+        input.value = "";
+        input.focus();
     }
-
-    nustatytiKambari(kodas);
-    document.getElementById("kambarioStatusas").textContent = "Prisijungta prie: " + kodas;
-    document.getElementById("kambarioStatusas").style.color = "green";
 }
 
-function nustatytiKambari(kodas) {
-    // Svarbu: atjungiame seną klausytoją, jei keičiamas kambarys
-    if (taskaiRef) {
-        taskaiRef.off();
+function uzdarytiOTP() {
+    document.getElementById("otpModal").style.display = "none";
+    pendingRole = null;
+}
+
+function patvirtintiOTP() {
+    const input = document.getElementById("otpInput");
+    if (PIN_CODES[pendingRole] && input.value === PIN_CODES[pendingRole]) {
+        uzbaigtiPasirinkima(pendingRole);
+        uzdarytiOTP();
+    } else {
+        alert("Neteisingas PIN kodas!");
+        input.value = "";
     }
+}
 
-    // Supaprastinta logika: visada veiksmai atliekami su "user1" taškais kambaryje.
-    // "user1" yra tas, kuris renka taškus. "user2" yra tas, kuris juos duoda/prižiūri.
-    // Abu vartotojai mato ir keičia tą patį taškų skaičių.
-    taskaiRef = db.ref(`kambariai/${kodas}/taskai_user1`);
-    istorijaPath = `kambariai/${kodas}/istorija_user1`;
+function uzbaigtiPasirinkima(role, isLoad = false) {
+    manoRolė = role;
+    localStorage.setItem("manoRole", role);
+    
+    const statusas = document.getElementById("kambarioStatusas");
+    statusas.textContent = "Jūs esate: " + (role === "user1" ? "Kajus" : "Akvilė");
+    document.getElementById("kambarioStatusas").style.color = "green";
 
-    taskaiRef.on("value", (snapshot) => {
+    // Atnaujiname nustatymus, kad veiktų mygtukai
+    nustatytiKambari();
+
+    if (!isLoad) {
+        rodytZinute("Pasirinkta: " + (role === "user1" ? "Kajus" : "Akvilė"), "green");
+        rodytiArbaPasleptiNustatymus(); // Uždaro nustatymų langą po sėkmingo prisijungimo
+
+        // Paprašome leidimo rodyti pranešimus (notifications)
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    }
+}
+
+function nustatytiKambari() {
+    const kodas = "pagrindinis"; // Fiksuotas kelias visiems
+
+    // Svarbu: atjungiame seną klausytoją, jei keičiamas kambarys
+    if (viewRef1) viewRef1.off();
+    if (viewRef2) viewRef2.off();
+    
+    // Nunuliname buvusias reikšmes, kad perkrovus puslapį nemestų pranešimo iškart
+    prevUser1Points = null;
+    prevUser2Points = null;
+
+    // 1. Stebime User 1 taškus
+    viewRef1 = db.ref(`kambariai/${kodas}/taskai_user1`);
+    viewRef1.on("value", (snapshot) => {
         const value = snapshot.val();
-        document.getElementById("taskai").textContent = value !== null ? value : 0;
+        const el = document.getElementById("taskai_user1");
+        
+        // Tikriname ar pasikeitė nuo paskutinio karto (ir tai ne pirmas užkrovimas)
+        if (prevUser1Points !== null && prevUser1Points !== value) {
+            siustiPranesima("Kajaus taškai pasikeitė!", `Naujas kiekis: ${value}`);
+        }
+        prevUser1Points = value;
+        
+        if (el) el.textContent = value !== null ? value : 0;
     });
+
+    // 2. Stebime User 2 taškus
+    viewRef2 = db.ref(`kambariai/${kodas}/taskai_user2`);
+    viewRef2.on("value", (snapshot) => {
+        const value = snapshot.val();
+        const el = document.getElementById("taskai_user2");
+        
+        if (prevUser2Points !== null && prevUser2Points !== value) {
+            siustiPranesima("Akvilės taškai pasikeitė!", `Naujas kiekis: ${value}`);
+        }
+        prevUser2Points = value;
+        
+        if (el) el.textContent = value !== null ? value : 0;
+    });
+
+    // 3. Nustatome veiksmų taikinį: user1 valdo user2 taškus, user2 valdo user1
+    if (manoRolė) {
+        const targetUser = (manoRolė === "user1") ? "user2" : "user1";
+        taskaiRef = db.ref(`kambariai/${kodas}/taskai_${targetUser}`);
+        istorijaPath = `kambariai/${kodas}/istorija_${targetUser}`;
+    } else {
+        taskaiRef = null; // Jei rolė nepasirinkta, negalima keisti taškų
+    }
 }
 
 
 
 function keistiTaskus(kiekis) {
     if (!taskaiRef) {
-        alert("Pirmiausia prisijunkite su kodu nustatymuose!");
+        alert("Pirmiausia pasirinkite kas esate nustatymuose!");
         return;
     }
-    taskaiRef.get().then((snapshot) => {
-        let dabartiniai = Number(snapshot.val()) || 0;
-        let nauji = dabartiniai + kiekis;
-        if (nauji < -10) {
+    taskaiRef.transaction((dabartiniai) => {
+        const nauji = (dabartiniai || 0) + kiekis;
+        if (nauji < -10) return; // Nutraukiame transakciją, jei per mažai taškų
+        return nauji;
+    }, (error, committed, snapshot) => {
+        if (error) {
+            console.error("Klaida keičiant taškus:", error);
+            rodytZinute("Klaida: " + (error.code || error.message), "red");
+        } else if (!committed) {
             rodytZinute("Negalima mažiau nei –10!", "orange");
-            return;
-        }
-        return taskaiRef.set(nauji).then(() => {
+        } else {
+            const nauji = snapshot.val();
             const istorijaRef = db.ref(istorijaPath);
             istorijaRef.push({
                 pokytis: kiekis,
@@ -106,10 +214,7 @@ function keistiTaskus(kiekis) {
                 vartotojas: manoRolė || "Nežinomas"
             });
             rodytZinute((kiekis > 0 ? "+" : "") + kiekis + " taškai", kiekis > 0 ? "green" : "red");
-        });
-    }).catch((error) => {
-        console.error("Klaida keičiant taškus:", error);
-        rodytZinute("Klaida: " + (error.code || error.message), "red");
+        }
     });
 }
 
@@ -134,6 +239,8 @@ function keistiTaskus(kiekis) {
       }
     });
   }
+
+
 
   // Žinutės rodymas
   function rodytZinute(text, color) {
@@ -189,7 +296,7 @@ function keistiTaskus(kiekis) {
   // Pirkimo funkcija
   function pirkti(kaina) {
     if (!taskaiRef) {
-        alert("Pirmiausia prisijunkite su kodu nustatymuose!");
+        alert("Pirmiausia pasirinkite kas esate nustatymuose!");
         return;
     }
     taskaiRef.get().then((snapshot) => {
@@ -267,18 +374,44 @@ function skaiciuotiSkirtuma() {
 
     // Parodome ekrane
     rodytiRezultataLenteleje(datosTekstas, dienuStatusas);
+    document.getElementById('datosValdykliai').style.display = "none";
+    document.getElementById('atstatymoBlokas').style.display = "block";
 
     // IŠSAUGOME: kad perkrovus nedingtų
     localStorage.setItem('saugykla_data', datosTekstas);
     localStorage.setItem('saugykla_rezultatas', dienuStatusas);
+    localStorage.setItem('datos_formos_busena', 'paslepta');
+}
+  // Nauja funkcija, skirta vėl rodyti pasirinkimą
+function rodytiPasirinkimaIsNaujo() {
+    document.getElementById('datosValdykliai').style.display = "block";
+    document.getElementById('atstatymoBlokas').style.display = "none";
+    localStorage.removeItem('datos_formos_busena'); // Ištriname būseną, kad perkrovus vėl matytųsi forma
 }
 
-// 4. AUTOMATINIS UŽKROVIMAS PERKROVUS PUSLAPĮ
-window.addEventListener("load", () => {
-    const issaugotaData = localStorage.getItem('saugykla_data');
-    const issaugotasRezultatas = localStorage.getItem('saugykla_rezultatas');
+// --- PAGALBINĖS FUNKCIJOS ---
 
-    if (issaugotaData && issaugotasRezultatas) {
-        rodytiRezultataLenteleje(issaugotaData, issaugotasRezultatas);
+// Funkcija išvaizdos keitimui
+function taikytiTekstura(texture) {
+    localStorage.setItem("pasirinktaTekstura", texture);
+    const buttons = document.querySelectorAll("button");
+    // Klasės, kurias reikia nuimti prieš dedant naują
+    const classesToRemove = ["texture1", "texture2", "texture3", "mygtukas1", "mygtukas2", "mygtukas3"];
+    
+    buttons.forEach(btn => {
+        // Nekeičiame nustatymų mygtuko stiliaus (pagal ID arba klasę)
+        if (btn.classList.contains("nustatymai-btn") || btn.id === "nustatymai-btn") return;
+        
+        classesToRemove.forEach(cls => btn.classList.remove(cls));
+        if (texture && texture !== "default") {
+            btn.classList.add(texture);
+        }
+    });
+}
+
+// Funkcija pranešimų siuntimui
+function siustiPranesima(title, body) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, { body: body });
     }
-});
+}
