@@ -55,6 +55,7 @@ nav{
 #nustatymaiSekcija.aktyvus {
   opacity: 1;
   max-height: 500px;     /* užtenka, kad tilptų turinys */
+  position:static
 }
 
 

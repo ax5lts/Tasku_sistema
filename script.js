@@ -26,10 +26,10 @@ const PIN_CODES = {
 };
 
 window.addEventListener("load", () => {
-    // Išvaizdos krovimas (tavo senas kodas)
+    // Išvaizdos krovimas (senas kodas)
     // Išvaizdos krovimas ir valdymas
     const savedTexture = localStorage.getItem("pasirinktaTekstura");
-    const textureSelect = document.getElementById("textureSelect");
+    const textureSelect = document.getElementById("Textura");
 
     if (textureSelect) {
         if (savedTexture) textureSelect.value = savedTexture;
@@ -60,7 +60,7 @@ window.addEventListener("load", () => {
     const busena = localStorage.getItem('datos_formos_busena');
 
     if (issaugotaData && issaugotasRezultatas) {
-        rodytiRezultataLenteleje(issaugotaData, issaugotasRezultatas);
+        rodytiRezultaLenteleje(issaugotaData, issaugotasRezultatas);
     }
     if (busena === 'paslepta') {
         const dv = document.getElementById('datosValdykliai');
@@ -217,20 +217,29 @@ function keistiTaskus(kiekis) {
         }
     });
 }
-
+console.log(manoRolė);
 // ... palik likusias funkcijas (rodytiIstorija, rodytZinute ir t.t.) kaip savo originale
 
   // Rodo istoriją
   function rodytiIstorija() {
+    // Apsauga, jei rolė nepasirinkta
+    if (!istorijaPath) {
+        document.getElementById("istorija").textContent = "Pasirinkite rolę, kad matytumėte istoriją.";
+        return;
+    }
     const istorijaRef = db.ref(istorijaPath);
-    istorijaRef.once("value", (snapshot) => {
+    // Gauname paskutinius 5 įrašus
+    istorijaRef.limitToLast(5).once("value", (snapshot) => {
       const data = snapshot.val();
       const istorijaDiv = document.getElementById("istorija");
       istorijaDiv.innerHTML = "";
       if (data) {
+        const vardai = { "user1": "Kajus", "user2": "Akvilė" };
+        // Apverčiame, kad naujausi įrašai būtų viršuje
         Object.values(data).reverse().forEach(entry => {
           const p = document.createElement("p");
-          const kas = entry.vartotojas ? ` [${entry.vartotojas}]` : "";
+          const vardas = vardai[entry.vartotojas] || entry.vartotojas; // Naudojame vardą vietoj rolės
+          const kas = vardas ? ` [${vardas}]` : "";
           p.textContent = `${entry.laikas}${kas}: ${entry.pokytis > 0 ? "+" : ""}${entry.pokytis} (viso: ${entry.naujaReiksme})`;
           istorijaDiv.appendChild(p);
         });
@@ -295,22 +304,37 @@ function keistiTaskus(kiekis) {
 
   // Pirkimo funkcija
   function pirkti(kaina) {
-    if (!taskaiRef) {
+    if (!manoRolė) {
         alert("Pirmiausia pasirinkite kas esate nustatymuose!");
         return;
     }
-    taskaiRef.get().then((snapshot) => {
-      const dabartiniai = Number(snapshot.val()) || 0;
-      if (dabartiniai >= kaina) {
-        // Panaudojame `keistiTaskus`, kad išlaikytume vieningą logiką 
-        // (istorijos įrašas, taškų limito patikra).
-        keistiTaskus(-kaina);
-      } else {
-        rodytZinute("Nepakanka taškų!", "orange");
+    
+    const kodas = "pagrindinis";
+    const myPointsRef = db.ref(`kambariai/${kodas}/taskai_${manoRolė}`);
+    const myHistoryPath = `kambariai/${kodas}/istorija_${manoRolė}`;
+
+    myPointsRef.transaction((dabartiniai) => {
+      const turimi = dabartiniai || 0;
+      if (turimi >= kaina) {
+        return turimi - kaina;
       }
-    }).catch((error) => {
+      return; // Atšaukiame, jei nepakanka
+    }, (error, committed, snapshot) => {
+      if (error) {
         console.error("Klaida perkant:", error);
         rodytZinute("Klaida tikrinant taškus!", "red");
+      } else if (!committed) {
+        rodytZinute("Nepakanka taškų!", "orange");
+      } else {
+        const nauji = snapshot.val();
+        db.ref(myHistoryPath).push({
+            pokytis: -kaina,
+            naujaReiksme: nauji,
+            laikas: new Date().toLocaleString(),
+            vartotojas: manoRolė
+        });
+        rodytZinute(`Nupirkta (-${kaina})`, "green");
+      }
     });
   }
 
@@ -320,15 +344,13 @@ const metuSelect = document.getElementById('metai');
 const dienosSelect = document.getElementById('diena');
 const dabartiniaiMetai = new Date().getFullYear();
 
-// Sugeneruojame metus nuo 1900 iki dabar
-for (let i = dabartiniaiMetai; i >= 1900; i--) {
+for (let i = dabartiniaiMetai; i >= 1980; i--) {
     let opt = document.createElement('option');
     opt.value = i;
     opt.innerHTML = i;
     metuSelect.appendChild(opt);
 }
 
-// Sugeneruojame dienas 1-31
 for (let i = 1; i <= 31; i++) {
     let opt = document.createElement('option');
     opt.value = i;
@@ -337,7 +359,7 @@ for (let i = 1; i <= 31; i++) {
 }
 
 // 2. FUNKCIJA REZULTATUI Į LENTELĘ ĮRAŠYTI
-function rodytiRezultataLenteleje(dataText, dienuTekstas) {
+function rodytiRezultaLenteleje(dataText, dienuTekstas) {
     const lentele = document.getElementById('rezultatuLentele').getElementsByTagName('tbody')[0];
     lentele.innerHTML = ""; // Išvalome seną, kad liktų tik vienas įrašas
     
@@ -373,7 +395,7 @@ function skaiciuotiSkirtuma() {
     }
 
     // Parodome ekrane
-    rodytiRezultataLenteleje(datosTekstas, dienuStatusas);
+    rodytiRezultaLenteleje(datosTekstas, dienuStatusas);
     document.getElementById('datosValdykliai').style.display = "none";
     document.getElementById('atstatymoBlokas').style.display = "block";
 
@@ -387,9 +409,26 @@ function rodytiPasirinkimaIsNaujo() {
     document.getElementById('datosValdykliai').style.display = "block";
     document.getElementById('atstatymoBlokas').style.display = "none";
     localStorage.removeItem('datos_formos_busena'); // Ištriname būseną, kad perkrovus vėl matytųsi forma
+    localStorage.removeItem('saugykla_data');
+    localStorage.removeItem('saugykla_rezultatas');
 }
+window.addEventListener ('load', () =>{
+    const d = new Date();
+    const sieandienosdata = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    const issaugotaData = localStorage.getItem('saugykla_data');
+    const rezultatas = localStorage.getItem('saugykla_rezultatas');
 
-// --- PAGALBINĖS FUNKCIJOS ---
+    if (issaugotaData === sieandienosdata && busena === 'paslepta') {
+        rodytiRezultaLenteleje(issaugotaData, rezultatas);
+        document.getElementById('datosValdykliai'). style.display = "none";
+        document.getElementById('atstatymoBlokas'). style.display = "block";
+    }
+    else{
+        rodytiPasirinkimaIsNaujo();
+    }
+})
+
+// Pagalbine funkcija
 
 // Funkcija išvaizdos keitimui
 function taikytiTekstura(texture) {
